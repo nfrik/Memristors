@@ -1,0 +1,96 @@
+__author__ = 'nfrik'
+import thread
+import time
+import matplotlib.pyplot as plt;
+import math;
+
+class memristor:
+
+    def __init__(self, w, D, Roff, Ron, v, mu, Tao):
+        self.w = w;
+        self.Roff = Roff;
+        self.Ron  = Ron;
+        self.v    = v;
+        self.D    = D;
+        self.mu   = mu;
+        self.Tao  = Tao;
+
+    def setV(self,v):
+        self.v = v;
+
+    def getV(self):
+        return self.v;
+
+    def updateW(self):
+
+        estim = self.getNewW();
+        if estim<self.D and estim > 0.0:
+            self.w=self.getNewW();
+
+    def getNewW(self):
+        return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/1000.0;
+
+    def getW(self):
+        return self.w
+
+    def getR(self):
+        return (self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D));
+
+    def getI(self):
+        return self.getV()/self.getR();
+
+
+
+# Define a function for the thread
+def print_time( threadName, delay):
+   count = 0
+   while count < 5:
+      time.sleep(delay)
+      count += 1
+      print "%s: %s" % ( threadName, time.ctime(time.time()) )
+
+
+mem1 = memristor(0.1,1.0,10000.0,10.0,10.0,0.01,10.0);
+
+
+yw=[];
+yr=[];
+yi=[];
+xv=[];
+
+for i in range(10000):
+    yw.append(mem1.getW())
+    yi.append(mem1.getI())
+    yr.append(mem1.getR())
+    xv.append(mem1.getV())
+    mem1.updateW();
+    mem1.setV(10*math.sin(2*math.pi*i/10000))
+    # print "W= "+str(mem1.getW()) + " R= " + str(mem1.getR()) + " V= " + str(mem1.getV()) + " I= " + str(mem1.getI());
+
+# plt.figure(1)
+# plt.plot(xv,yi);
+plt.figure(1)
+plt.subplot(411)
+plt.plot(range(len(xv)),xv,'b-');
+plt.subplot(412)
+plt.plot(range(len(xv)),yi,'g-');
+plt.subplot(413)
+plt.plot(range(len(xv)),yr,'rs')
+plt.subplot(414)
+plt.plot(range(len(xv)),yw)
+
+plt.figure(2)
+plt.plot(xv,yi,'r.')
+plt.show()
+
+
+print str(min(yr))
+# # Create two threads as follows
+# try:
+#    thread.start_new_thread( print_time, ("Thread-1", 2, ) )
+#    thread.start_new_thread( print_time, ("Thread-2", 4, ) )
+# except:
+#    print "Error: unable to start thread"
+#
+# while 1:
+#    pass
