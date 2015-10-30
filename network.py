@@ -7,6 +7,29 @@ from ahkab import new_ac, new_op, run
 from ahkab.circuit import Circuit
 import memristor;
 
+
+
+#Get first voltage values
+def set_mem_voltages(r):
+    for k in memdict.keys():
+        [n0,n1]=['VN'+str(memdict[k][0]),'VN'+str(memdict[k][1])];
+        [v0,v1]=[r.results[n0],r.results[n1]]
+        memdict[k][2].setV(v1-v0)
+
+def update_circ_res_vals():
+    global n
+    for k in memdict.keys():
+        memdict[k][2].updateW();
+        for n in range(len(cir)):
+            if k == cir[n].part_id:
+                cir[n].value = memdict[k][2].getR();
+
+
+def update_mem_state():
+    for k in memdict.keys():
+        memdict[k][2].updateW();
+
+
 w=0.1
 D=1.0
 Roff=10.;
@@ -14,7 +37,7 @@ Ron=1.;
 mu=10.
 Tao=0.01
 
-G=nx.random_regular_graph(3,4)
+G=nx.random_regular_graph(3,40)
 
 #create circuit
 cir = Circuit('Memristor test')
@@ -46,29 +69,38 @@ G.node[lastnode]['number']='gnd';
 edge_labels=nx.get_edge_attributes(G,'weight')
 node_labels=nx.get_node_attributes(G,'number')
 
-fig,ax = plt.subplots()
-
-pos=nx.circular_layout(G)
-nx.draw(G,pos=pos,ax=ax)
-nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_labels,font_size=8,ax=ax)
-nx.draw_networkx_labels(G,pos=pos,labels=node_labels,font_size=8,ax=ax)
-
-plt.savefig('show.png')
+# fig,ax = plt.subplots()
+# pos=nx.circular_layout(G)
+# nx.draw(G,pos=pos,ax=ax)
+# nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_labels,font_size=8,ax=ax)
+# nx.draw_networkx_labels(G,pos=pos,labels=node_labels,font_size=8,ax=ax)
+#
+# plt.savefig('show.png')
 # plt.show()
 
 
 
 cir.add_resistor("RG",'n'+str(gnd),cir.gnd,0.001);
-cir.add_vsource("V1",'n'+str(v1),cir.gnd,1);
+cir.add_vsource("V1",'n'+str(v1),cir.gnd,100);
 opa = new_op();
-r = run(cir,opa)['op'];
 
-#Get first voltage values
-for k in memdict.keys():
-    [n0,n1]=['VN'+str(memdict[k][0]),'VN'+str(memdict[k][1])];
-    [v0,v1]=[r.results[n0],r.results[n1]]
-    (memristor)memdict[k][2].set
+#get initial voltages
+# set_mem_voltages(r);
 
+# memdict_t={}
+
+
+
+cur=[]
+for i in range(100):
+    r = run(cir,opa)['op'];
+    set_mem_voltages(r)
+    update_mem_state()
+    update_circ_res_vals()
+    cur.append(r)
+
+plt.plot([x.results['I(V1)'] for x in cur])
+plt.show()
 
 # #Get first voltage values
 # keys=r.results.keys();
@@ -94,4 +126,5 @@ for k in memdict.keys():
 
 # print mems;
 
-print r
+# print r
+

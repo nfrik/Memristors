@@ -29,7 +29,7 @@ class memristor:
             self.w=self.getNewW();
 
     def getNewW(self):
-        return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/1000.0;
+        return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/100.0;
 
     def getW(self):
         return self.w
