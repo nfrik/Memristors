@@ -14,14 +14,19 @@ Ron=1.;
 mu=10.
 Tao=0.01
 
-G=nx.random_regular_graph(3,10)
+G=nx.random_regular_graph(3,4)
 
 #create circuit
 cir = Circuit('Memristor test')
 
+#dict with terminals and memristors
+memdict={}
 for e in G.edges_iter():
     rval=round(Roff+0.01*Roff*(random.random()-0.5),2);
-    cir.add_resistor('R'+str(e[0])+str(e[1]),'n'+str(e[0]),'n'+str(e[1]),rval)
+    key='R'+str(e[0])+str(e[1])
+    [v1,v2]=[e[0],e[1]]
+    memdict[key]=[v1,v2,memristor.memristor(w,D,Roff,Ron,mu,Tao,0.0)] # we set v=0 value temporarily
+    cir.add_resistor(key,'n'+str(v1),'n'+str(v2),rval)
     G[e[0]][e[1]]['weight']=rval;
     # edge_labels[e]=rval;
 
@@ -29,7 +34,7 @@ for n in G.nodes_iter():
     G.node[n]['number']=n;
 
 
-#Choose randomly ground and voltage terminal nodes
+#Choose randomly ground and voltage terminal nodes on graph
 [v1,gnd]=random.sample(xrange(0,len(G.nodes())),2);
 lastnode=len(G.nodes());
 G.add_edge(v1,lastnode);
@@ -38,13 +43,12 @@ lastnode+=1;
 G.add_edge(gnd,lastnode);
 G.node[lastnode]['number']='gnd';
 
-
 edge_labels=nx.get_edge_attributes(G,'weight')
 node_labels=nx.get_node_attributes(G,'number')
 
 fig,ax = plt.subplots()
 
-pos=nx.spring_layout(G)
+pos=nx.circular_layout(G)
 nx.draw(G,pos=pos,ax=ax)
 nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_labels,font_size=8,ax=ax)
 nx.draw_networkx_labels(G,pos=pos,labels=node_labels,font_size=8,ax=ax)
@@ -54,21 +58,28 @@ plt.savefig('show.png')
 
 
 
-cir.add_resistor("RG",'n'+str(v1),cir.gnd,0.001);
-cir.add_vsource("V1",'n'+str(gnd),cir.gnd,1);
+cir.add_resistor("RG",'n'+str(gnd),cir.gnd,0.001);
+cir.add_vsource("V1",'n'+str(v1),cir.gnd,1);
 opa = new_op();
 r = run(cir,opa)['op'];
 
 #Get first voltage values
-keys=r.results.keys();
-keys.remove('I(V1)'); #for now we know this key
+for k in memdict.keys():
+    [n0,n1]=['VN'+str(memdict[k][0]),'VN'+str(memdict[k][1])];
+    [v0,v1]=[r.results[n0],r.results[n1]]
+    (memristor)memdict[k][2].set
+
+
+# #Get first voltage values
+# keys=r.results.keys();
+# keys.remove('I(V1)'); #for now we know this key
 
 
 #create memristors list
-mems={};
-for k in keys:
-    curv=r.results[k];
-    mems[k]=memristor.memristor(w,D,Roff,Ron,mu,Tao,curv);
+# mems={};
+# for k in keys:
+#     curv=r.results[k];
+#     mems[k]=memristor.memristor(w,D,Roff,Ron,mu,Tao,curv);
 
 #connect
 
@@ -81,6 +92,6 @@ for k in keys:
 # #update voltages on memristors
 # #save values from memristors
 
-print mems;
+# print mems;
 
 print r
