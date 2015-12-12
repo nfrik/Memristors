@@ -9,13 +9,13 @@ import memristor
 
 
 #Get first voltage values
-def update_memristor_vals_from_oprun(r):
+def update_memristor_voltages_from_oprun(r):
     for k in memdict.keys():
         [n0,n1]=['VN'+str(memdict[k][0]),'VN'+str(memdict[k][1])]
         [v0,v1]=[r.results[n0],r.results[n1]]
         memdict[k][2].setV(v1-v0)
 
-def update_circrvals_from_memres():
+def update_circresvals_from_memstates():
     global n
     for k in memdict.keys():
         # memdict[k][2].updateW()
@@ -30,17 +30,17 @@ def update_memristor_states():
 
 w=0.1
 D=1.0
-Roff=100.
-Ron=1.
-mu=10.
-Tao=0.1
+Roff=10000.
+Ron=10.
+mu=0.1
+Tao=1.1
 
-G=nx.random_regular_graph(3,10)
+G=nx.random_regular_graph(3,100)
 
 #create circuit
 cir = Circuit('Memristor test')
 
-#assign dictionary with terminals and memristors
+#assign voltage input dictionary with terminals and memristors
 memdict={}
 for e in G.edges_iter():
     rval=round(Roff+0.01*Roff*(random.random()-0.5),2)
@@ -55,7 +55,7 @@ for n in G.nodes_iter():
     G.node[n]['number']=n
 
 
-#Choose randomly ground and voltage terminal nodes on graph
+#Choose randomly ground and voltage terminal nodes on the graph
 [v1,gnd]=random.sample(xrange(0,len(G.nodes())),2)
 lastnode=len(G.nodes())
 G.add_edge(v1,lastnode)
@@ -78,7 +78,7 @@ plt.close()
 # plt.show()
 
 cir.add_resistor("RG",'n'+str(gnd),cir.gnd,0.001)
-cir.add_vsource("V1",'n'+str(v1),cir.gnd,1000)
+cir.add_vsource("V1",'n'+str(v1),cir.gnd,100)
 opa = new_op()
 
 #get initial voltages
@@ -88,19 +88,20 @@ opa = new_op()
 
 
 
-circ_state=[]
-for i in range(100):
+circ_state_t=[]
+for i in range(10):
     r = run(cir,opa)['op']
-    update_memristor_vals_from_oprun(r)
+    circ_state_t.append(r)
+    update_memristor_voltages_from_oprun(r)
     update_memristor_states()
-    update_circrvals_from_memres()
-    circ_state.append(r)
+    update_circresvals_from_memstates()
+
+
 
 # print cur
-
-for i in range(len(circ_state[0].results.keys())-1):
-    plt.plot([x.results['VN'+str(i)] for x in circ_state])
-plt.plot([x.results['I(V1)'] for x in circ_state])
+for i in range(len(circ_state_t[0].results.keys())-1):
+    plt.plot([x.results['VN'+str(i)] for x in circ_state_t])
+# plt.plot([x.results['I(V1)'] for x in circ_state_t])
 
 plt.show()
 

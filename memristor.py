@@ -2,7 +2,9 @@ __author__ = 'nfrik'
 import thread
 import time
 import matplotlib.pyplot as plt;
-import math;
+import math
+import numpy as np
+from matplotlib.widgets import Slider, Button, RadioButtons
 
 class memristor:
     # def __init__(self, w, D, Roff, Ron, v, mu, Tao):
@@ -28,7 +30,7 @@ class memristor:
             self.w=self.getNewW();
 
     def getNewW(self):
-        return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/100.0;
+        return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/1.0;
 
     def getW(self):
         return self.w
@@ -73,15 +75,20 @@ if __name__ == "__main__":
     plt.figure(1)
     plt.subplot(411)
     plt.plot(range(len(xv)),xv,'b-')
+    plt.title("Voltage")
     plt.subplot(412)
     plt.plot(range(len(xv)),yi,'g-')
+    plt.title("Current")
     plt.subplot(413)
     plt.plot(range(len(xv)),yr,'rs')
+    plt.title("Resistance")
     plt.subplot(414)
     plt.plot(range(len(xv)),yw)
+    plt.title("W")
+
 
     plt.figure(2)
-    plt.plot(xv,yi,'r.')
+    plt.plot(xv[1::],yi[1::],'r-')
     plt.show()
 
 
