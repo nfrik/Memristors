@@ -29,8 +29,11 @@ class memristor:
         if estim<self.D and estim > 0.0:
             self.w=self.getNewW();
 
+    # def getNewW(self):
+    #     return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/1.0;
+
     def getNewW(self):
-        return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/1.0;
+        return (np.sqrt(np.power(self.Roff,2)+(self.Ron-self.Roff)/self.D*((self.Ron-self.Roff)*np.power(self.w,2)/2/self.D+self.Roff*self.w+self.mu*self.Ron/self.D*self.v*self.Tao))-self.Roff)/(self.Ron-self.Roff)/self.D
 
     def getW(self):
         return self.w
