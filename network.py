@@ -7,6 +7,7 @@ from ahkab import new_ac, new_op, run
 from ahkab.circuit import Circuit
 import memristor
 import numpy as np
+from matplotlib.widgets import Slider
 
 
 #Get first voltage values
@@ -28,6 +29,15 @@ def update_memristor_states():
     for k in memdict.keys():
         memdict[k][2].updateW()
 
+def set_cir_voltage(part_id, val, cir):
+    for n in range(len(cir)):
+        if cir[n].part_id == part_id:
+            cir[n].dc_value=val
+
+def get_cir_voltage(part_id,cir):
+    for n in range(len(cir)):
+        if cir[n].part_id == part_id:
+            return cir[n].dc_value
 
 w=0.1
 D=1.0
@@ -35,6 +45,10 @@ Roff=100.
 Ron=1.
 mu=10.
 Tao=0.1
+
+global a0, f0
+a0=1000
+f0=10
 
 G=nx.random_regular_graph(3,10)
 
@@ -93,12 +107,32 @@ circ_state=[]
 x=0
 y=0
 fig=plt.figure(1)
-ax=fig.add_subplot(111)
+ax=fig.add_subplot(211)
+ax1=fig.add_subplot(212)
+plt.subplots_adjust(left=0.25, bottom=0.25)
 
 r = run(cir,opa)['op']
-line=[None]*(len(r.results.keys())-1)
+line=[None]*(len(r.results.keys()))
 for n in range(len(line)):
     line[n],=ax.plot(x,y)
+
+l2,=ax1.plot(x,y)
+
+
+axcolor = 'lightgoldenrodyellow'
+axfreq = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
+axamp = plt.axes([0.25, 0.15, 0.65, 0.03], axisbg=axcolor)
+
+sfreq = Slider(axfreq, 'Freq', 0.01, 20.0, valinit=f0)
+samp = Slider(axamp, 'Amp', 0.1, 1500.0, valinit=a0)
+
+def update(val):
+    a0=samp.val
+    f0=sfreq.val
+
+sfreq.on_changed(update)
+samp.on_changed(update)
+
 
 for i in range(10000):
     r = run(cir,opa)['op']
@@ -113,7 +147,15 @@ for i in range(10000):
         line[p].set_data(x,y)
         ax.relim()
         ax.autoscale_view()
-        plt.pause(0.001)
+
+    plt.pause(0.001)
+    newv=samp.val*np.sin(2*np.pi*sfreq.val*i*Tao)
+    set_cir_voltage('V1', newv, cir)
+    x = np.concatenate((l2.get_xdata(),[i]))
+    y = np.concatenate((l2.get_ydata(),[get_cir_voltage('V1',cir)]))
+    l2.set_data(x,y)
+    ax1.relim()
+    ax1.autoscale_view()
 
 # print cur
 
