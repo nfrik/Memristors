@@ -1,7 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
 from scipy.optimize import curve_fit
 import igraph as ig
 from matplotlib.widgets import Slider
@@ -46,8 +45,8 @@ axcolor = 'lightgoldenrodyellow'
 axnump = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
 apower = plt.axes([0.25, 0.15, 0.65, 0.03], axisbg=axcolor)
 
-snump = Slider(axnump, 'Number', 10., 300.0, valinit=n0)
-spower = Slider(apower, 'Power', 0.5, 5.0, valinit=p0)
+snump = Slider(axnump, 'Number', 10., 1000.0, valinit=n0)
+spower = Slider(apower, 'Power', 0.1, 5.0, valinit=p0)
 
 
 def update(val):

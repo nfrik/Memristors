@@ -53,7 +53,7 @@ def powf(x,a,b,c):
 g=ig.Graph.Barabasi(100,power=1.2)
 G=nx.Graph(g.get_edgelist())
 
-layout = g.layout("rt")
+layout = g.layout("kk")
 ig.plot(g)
 
 degree_sequence=sorted(nx.degree(G).values(),reverse=True)

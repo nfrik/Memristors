@@ -1,9 +1,7 @@
 __author__ = 'nfrik'
 
-from ahkab import *;
+from ahkab import *
 from ahkab.circuit import Circuit
-from ahkab.plotting import plot_results
-import numpy as np
 
 cir = Circuit('asdf')
 cir.add_vsource('V1','n1',cir.gnd,dc_value=1.,ac_value=0.)
@@ -13,6 +11,12 @@ cir.add_resistor('R4','n3',cir.gnd,10)
 
 # ac1 = new_ac(2.*np.pi*.97e3, 2.*np.pi*1.03e3,1e2,x0=None)
 opa = new_op()
+r = run(cir,opa)['op']
+print r['VN2'][0][0]
+print r
+
+cir[0].dc_value=10.
+
 r = run(cir,opa)['op']
 print r['VN2'][0][0]
 print r
