@@ -1,3 +1,4 @@
+# Memristor model
 __author__ = 'nfrik'
 import time
 import matplotlib.pyplot as plt
