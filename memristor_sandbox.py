@@ -50,7 +50,6 @@ ln3, = ax3.plot(xvv,yii, lw=1.5, color='g')
 
 ax1.set_xlim([0,1])
 
-
 axcolor = 'lightgoldenrodyellow'
 axfreq = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
 axamp = plt.axes([0.25, 0.15, 0.65, 0.03], axisbg=axcolor)

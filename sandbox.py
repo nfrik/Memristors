@@ -1,3 +1,4 @@
+#learning how to generate networks
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
