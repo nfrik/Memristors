@@ -118,12 +118,13 @@ def generate_network(mem_pars, net_pars):
     opa = new_op()
 
     # netdict contains setup graph and circuit
-    netdict = {}
-    netdict['Graph'] = G
-    netdict['Circuit'] = cir
-    netdict['Memristors'] = memdict
+    networkdict = {}
+    networkdict['Graph'] = G
+    networkdict['Circuit'] = cir
+    networkdict['Memristors'] = memdict
+    networkdict['Opa']=opa
 
-    return netdict
+    return networkdict
 
 
 w = 0.1
@@ -143,58 +144,6 @@ global a0, f0
 a0 = 1000
 f0 = 10
 
-# cir = Circuit('Memristor test')
-# G=nx.random_regular_graph(3,10)
-#
-# #create circuit
-#
-# #assign dictionary with terminals and memristors
-# memdict={}
-# for e in G.edges_iter():
-#     rval=round(Roff+0.01*Roff*(random.random()-0.5),2)
-#     key='R'+str(e[0])+str(e[1])
-#     [v1,v2]=[e[0],e[1]]
-#     memdict[key]=[v1,v2,memristor.memristor(w,D,Roff,Ron,mu,Tao,0.0)] # we set v=0.0 value in the beginning
-#     cir.add_resistor(key,'n'+str(v1),'n'+str(v2),rval)
-#     G[e[0]][e[1]]['weight']=rval
-#     # edge_labels[e]=rval;
-#
-# for n in G.nodes_iter():
-#     G.node[n]['number']=n
-#
-#
-# #Choose randomly ground and voltage terminal nodes on graph
-# [v1,gnd]=random.sample(xrange(0,len(G.nodes())),2)
-# lastnode=len(G.nodes())
-# G.add_edge(v1,lastnode)
-# G.node[lastnode]['number']='V1'
-# lastnode+=1
-# G.add_edge(gnd,lastnode)
-# G.node[lastnode]['number']='gnd'
-#
-# edge_labels=nx.get_edge_attributes(G,'weight')
-# node_labels=nx.get_node_attributes(G,'number')
-#
-# fig,ax = plt.subplots()
-# pos=nx.circular_layout(G)
-# nx.draw(G,pos=pos,ax=ax)
-# nx.draw_networkx_edge_labels(G,pos=pos,edge_labels=edge_labels,font_size=8,ax=ax)
-# nx.draw_networkx_labels(G,pos=pos,labels=node_labels,font_size=8,ax=ax)
-#
-# plt.savefig('show.png')
-# plt.close()
-# #plt.show()
-
-# cir.add_resistor("RG",'n'+str(gnd),cir.gnd,0.001)
-# cir.add_vsource("V1",'n'+str(v1),cir.gnd,1000)
-# opa = new_op()
-
-# get initial voltages
-# set_mem_voltages(r);
-
-# memdict_t={}
-
-
 
 circ_state = []
 x = 0
@@ -204,7 +153,7 @@ ax = fig.add_subplot(211)
 ax1 = fig.add_subplot(212)
 plt.subplots_adjust(left=0.25, bottom=0.25)
 
-r = run(cir, opa)['op']
+r = run(netdict['Circuit'], netdict['Opa'])['op']
 line = [None] * (len(r.results.keys()))
 for n in range(len(line)):
     line[n], = ax.plot(x, y)
@@ -228,10 +177,10 @@ sfreq.on_changed(update)
 samp.on_changed(update)
 
 for i in range(10000):
-    r = run(cir, opa)['op']
-    update_memristor_vals_from_oprun(r)
-    update_memristor_states()
-    update_circrvals_from_memres()
+    r = run(netdict['Circuit'], netdict['Opa'])['op']
+    netdict=update_memristor_vals_from_oprun(netdict,r)
+    netdict=update_memristor_states(netdict)
+    netdict=update_circrvals_from_memres(netdict)
     circ_state.append(r)
 
     for p in range(len(r.results.keys()) - 1):
@@ -243,9 +192,9 @@ for i in range(10000):
 
     plt.pause(0.001)
     newv = samp.val * np.sin(2 * np.pi * sfreq.val * i * Tao)
-    set_cir_voltage('V1', newv, cir)
+    set_cir_voltage('V1', newv, netdict)
     x = np.concatenate((l2.get_xdata(), [i]))
-    y = np.concatenate((l2.get_ydata(), [get_cir_voltage('V1', cir)]))
+    y = np.concatenate((l2.get_ydata(), [get_cir_voltage('V1', netdict)]))
     l2.set_data(x, y)
     ax1.relim()
     ax1.autoscale_view()
