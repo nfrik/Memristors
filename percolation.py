@@ -2,22 +2,28 @@
 
 from pylab import *
 from scipy.ndimage import measurements
-
+from scipy.ndimage import rotate
 
 L = 100
 r = rand(L, L)
-p = 0.5
+p = 0.3
 z = r < p
 
 figure(figsize=(16,5))
-subplot(1,3,1)
+subplot(1,4,1)
 imshow(z, origin='lower', interpolation='nearest')
+colorbar()
+title("Matrix")
+
+subplot(1,4,2)
+k=rotate(z,angle=45)
+imshow(k, origin='lower', interpolation='nearest')
 colorbar()
 title("Matrix")
 
 # Show image of labeled clusters (shuffled)
 lw, num = measurements.label(z)
-subplot(1,3,2)
+subplot(1,4,3)
 b = arange(lw.max() + 1) # create an array of values from 0 to lw.max() + 1
 shuffle(b) # shuffle this array
 shuffledLw = b[lw] # replace all values with values from b
@@ -26,7 +32,7 @@ colorbar()
 title("Labeled clusters")
 
 # Calculate areas
-subplot(1,3,3)
+subplot(1,4,4)
 area = measurements.sum(z, lw, index=arange(lw.max() + 1))
 areaImg = area[lw]
 im3 = imshow(areaImg, origin='lower', interpolation='nearest')
