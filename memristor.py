@@ -17,7 +17,7 @@ class memristor:
         self.Tao  = Tao #Time parameter
         self.RonMRoffD=(self.Ron-self.Roff)/self.D
         self.RoffSq=np.power(self.Roff,2)
-        self.muRonDdt=self.mu*self.Ron/self.D*self.Tao
+        self.muRonDdt=self.mu*self.Ron/self.D
 
     def setV(self,v):
         self.v = v
@@ -33,9 +33,10 @@ class memristor:
 
     def getNewW(self):
         # if self.exact <> True:
-            return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/1.0
+        #    return self.w+self.Ron/self.D*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao/1.0
         # else:
-        #     return (-self.Roff+np.sqrt(self.RoffSq+2*self.RonMRoffD*(self.RonMRoffD/2*np.power(self.w,2)+self.Roff*self.w+self.muRonDdt*self.v)))/self.RonMRoffD
+        # return (-self.Roff+np.sqrt(self.RoffSq+2*self.RonMRoffD*(self.RonMRoffD/2*np.power(self.w,2)+self.Roff*self.w+self.muRonDdt*self.v)))/self.RonMRoffD
+        return self.w+self.muRonDdt*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao;
 
     # def getNewExW(self):
     #     # return (np.sqrt(np.power(self.Roff,2)+(self.Ron-self.Roff)/self.D*((self.Ron-self.Roff)*np.power(self.w,2)/2/self.D+self.Roff*self.w+self.mu*self.Ron/self.D*self.v*self.Tao))-self.Roff)/(self.Ron-self.Roff)/self.D
@@ -50,6 +51,15 @@ class memristor:
     def getI(self):
         return self.getV()/self.getR()
 
+    def getTao(self):
+        return self.Tao;
+
+    def getD(self):
+        return self.D;
+
+    def getMu(self):
+        return self.mu;
+
 
 if __name__ == "__main__":
 
@@ -62,21 +72,31 @@ if __name__ == "__main__":
           print "%s: %s" % ( threadName, time.ctime(time.time()) )
 
 
-    mem1 = memristor(0.1,1.0,10000.0,10.0,10.0,0.01,10.0)
+# % v=v_0 sin(omega_0t)
+# % D = 10nm = 10e-9 m
+# % Muy_D = 1e-10 cm2s-1V-1 = 1e-14 m-2s-1V-1
+# % i_0 = v_0/R_ON=10 mA = 10^-2 A ===> R_ON = 100 ohm
+# % R_OFF/R_ON = 160 ==> R_OFF = 16e+3 ohm
+# % w_0/D = 0.5 ==> w_0 = 5nm = 5e-9 m
 
+    mem1 = memristor(w=100e-9,D=200e-9,Roff=16e5,Ron=1e4,mu=1e-12,Tao=0.001,v=1.0)
 
     yw=[]
     yr=[]
     yi=[]
     xv=[]
 
-    for i in range(10000):
-        yw.append(mem1.getW())
+    t_0=mem1.getD()*mem1.getD()/mem1.getMu()/1.;
+
+    print t_0
+
+    for t in np.arange(0,20*math.pi,mem1.getTao()):
+        yw.append(mem1.getW()/mem1.getD())
         yi.append(mem1.getI())
         yr.append(mem1.getR())
         xv.append(mem1.getV())
         mem1.updateW()
-        mem1.setV(10*math.sin(2*math.pi*i/10000))
+        mem1.setV(1.*math.sin(t))
         # print "W= "+str(mem1.getW()) + " R= " + str(mem1.getR()) + " V= " + str(mem1.getV()) + " I= " + str(mem1.getI());
 
     # plt.figure(1)
@@ -89,11 +109,11 @@ if __name__ == "__main__":
     plt.plot(range(len(xv)),yi,'g-')
     plt.title("Current")
     plt.subplot(413)
-    plt.plot(range(len(xv)),yr,'rs')
+    plt.plot(range(len(xv)),yr,'r-')
     plt.title("Resistance")
     plt.subplot(414)
-    plt.plot(range(len(xv)),yw)
-    plt.title("W")
+    plt.plot(range(len(xv)),yw,'m-')
+    plt.title("W/D")
 
 
     plt.figure(2)

@@ -27,8 +27,10 @@ def get_mem_states(a0,f0,mem,t):
     return [yw,yr,yi,xv]
 
 #(w, D, Roff, Ron, v, mu, Tao):
-mem1 = memristor(0.1,1.0,10000.0,10.0,10.0,0.1,100.1)
-mem2 = memristor(0.1,1.0,10000.0,10.0,10.0,0.1,100.1)
+# mem1 = memristor(0.1,1.0,10000.0,10.0,10.0,0.1,100.1)
+mem1 = memristor(w=25e-9,D=50e-9,Roff=16e3,Ron=100.0,mu=1e-14,Tao=0.001,v=1.0)
+mem2 = memristor(w=25e-9,D=50e-9,Roff=16e3,Ron=100.0,mu=1e-14,Tao=0.001,v=1.0)
+# mem2 = memristor(0.1,1.0,10000.0,10.0,10.0,0.1,100.1)
 
 fig, (ax1,ax2,ax3) = plt.subplots(3,1)
 plt.subplots_adjust(left=0.25, bottom=0.25)
