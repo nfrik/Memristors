@@ -30,7 +30,7 @@ class circuit:
             self.A[self.sources[i,0],self.sources[i,0]]=1
             self.B[self.sources[i,0],0]=self.sources[i,1]
 
-    def getV(self):
+    def getV(self): 
         self.setupAB()
         return np.linalg.solve(self.A,self.B)
 
