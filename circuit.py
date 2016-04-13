@@ -20,17 +20,17 @@ class circuit:
             n1=self.netlist[i,0]
             n2=self.netlist[i,1]
             if n1!=n2:
-                self.A[n1,n2]=self.A[n1,n2]-1/self.netlist[i,2]
-                self.A[n2,n1]=self.A[n2,n1]-1/self.netlist[i,2]
-                self.A[n1,n1]=self.A[n1,n1]+1/self.netlist[i,2]
-                self.A[n2,n2]=self.A[n2,n2]+1/self.netlist[i,2]
+                self.A[n1,n2]=self.A[n1,n2]-1./self.netlist[i,2]
+                self.A[n2,n1]=self.A[n2,n1]-1./self.netlist[i,2]
+                self.A[n1,n1]=self.A[n1,n1]+1./self.netlist[i,2]
+                self.A[n2,n2]=self.A[n2,n2]+1./self.netlist[i,2]
 
         for i in range(0,vn):
             self.A[self.sources[i,0],:]=np.zeros((1,self.N+1))
-            self.A[self.sources[i,0],self.sources[i,0]]=1
+            self.A[self.sources[i,0],self.sources[i,0]]=1.
             self.B[self.sources[i,0],0]=self.sources[i,1]
 
-    def getV(self): 
+    def getV(self):
         self.setupAB()
         return np.linalg.solve(self.A,self.B)
 
@@ -40,6 +40,8 @@ if __name__ == "__main__":
 
     netlist = np.array([[0,1,2],[0,2,4],[1,2,5.2],[2,3,6],[1,3,3]])
     sources = np.array([[0,6],[3,2]])
+    # netlist = np.array([[0,1,5],[1,2,5]])
+    # sources = np.array([[0,1],[2,0]])
     a=circuit(netlist=netlist,sources=sources)
     v=a.getV()
 
