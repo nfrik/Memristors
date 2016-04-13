@@ -5,6 +5,7 @@ from scipy.ndimage import measurements
 from pylab import *
 from scipy.sparse import spdiags, dia_matrix, coo_matrix
 from scipy.sparse.linalg import spsolve
+from numpy.linalg import solve
 
 #
 # Written by Marin Soreng
@@ -23,6 +24,10 @@ def FIND_COND (A , X , Y ):
     #print C
     # Kirchhoff equations solve for P
     P = spsolve(B, C)
+    # print len(B.toarray())
+    # print len(C)
+    # P=solve(B.toarray(),C)
+
     # The pressure at the external sites is added
     # ( Boundary conditions )
     P = concatenate((P_in * ones (X), P,  P_out * ones (X)))
