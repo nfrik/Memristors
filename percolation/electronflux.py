@@ -5,20 +5,20 @@ from pylab import *
 if __name__=="__main__":
 
     #Dimensions of the system
-    Lx=400
-    Ly=400
+    Lx=300
+    Ly=300
 
     #Define rods
-    Nr=60   #rods
-    Lr=100 #lenght of rod in nm
-    Dr=3  #diameter of rod in nm
+    Nr=150   #rods
+    Lr=50 #lenght of rod in nm
+    Dr=2  #diameter of rod in nm
 
     #Define circles
-    Nc=0   #rods
+    Nc=0   #circles
     Rc=20 #lenght of rod in nm
 
     #Define 1x1 nm particles
-    Np=10000 #particles
+    Np=1 #particles
     p=float(Np)/(Lx*Ly)
 
     #Create random matrix
@@ -35,7 +35,7 @@ if __name__=="__main__":
             #print "Couldn't make percolation cluster..."
             break
 
-        #Generate experimental playground
+        #Generate experimental area
         z=rand(Lx,Ly)<p
 
         if Nr>0:
@@ -104,7 +104,7 @@ if __name__=="__main__":
 #    axis equal
     subplot(222, sharex=ax, sharey=ax)
     imshow(P, interpolation='nearest')
-    title("Electric Potential for spanning cluster")
+    title("Electric Potential for Spanning Cluster")
     colorbar()
     grid(color="white")
 #    subplot (2 ,2 ,2) , imagesc ( P )

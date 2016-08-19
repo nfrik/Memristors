@@ -8,6 +8,7 @@ import memristor
 import numpy as np
 from matplotlib.widgets import Slider
 
+graph_type = {1:'watts_strogatz',2:'random_regular'}
 
 # Get first voltage values
 def update_memristor_vals_from_oprun(netdict, r):
@@ -64,21 +65,30 @@ def get_cir_voltage(part_id, netdict):
 
 
 def plot_graph(G):
+    plt.figure()
     edge_labels = nx.get_edge_attributes(G, 'weight')
     node_labels = nx.get_node_attributes(G, 'number')
 
     fig, ax = plt.subplots()
-    pos = nx.circular_layout(G)
+    # pos = nx.circular_layout(G)
+    pos = nx.spring_layout(G)
     nx.draw(G, pos=pos, ax=ax)
     nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edge_labels, font_size=8, ax=ax)
     nx.draw_networkx_labels(G, pos=pos, labels=node_labels, font_size=8, ax=ax)
 
-    plt.savefig('show.png')
+    plt.savefig('show2.png')
     plt.close()
 
+def export_graph(G):
+    #Currently falstad format only
+    return
 
 def generate_network(mem_pars, net_pars):
-    G = nx.random_regular_graph(net_pars['degree'], net_pars['N'])
+    if net_pars['type']==graph_type[1]:
+        G = nx.watts_strogatz_graph(net_pars['N'],net_pars['k'],net_pars['p'])
+    elif net_pars['type']==graph_type[2]:
+        G = nx.random_regular_graph(net_pars['degree'], net_pars['N'])
+
     cir = Circuit('Memristor network test')
 
     # assign dictionary with terminals and memristors
@@ -113,6 +123,8 @@ def generate_network(mem_pars, net_pars):
     G.add_edge(gnd, lastnode)
     G.node[lastnode]['number'] = 'gnd'
 
+    plot_graph(G)
+
     cir.add_resistor("RG", 'n' + str(gnd), cir.gnd, 0.001)
     cir.add_vsource("V1", 'n' + str(v1), cir.gnd, 1000)
     opa = new_op()
@@ -136,7 +148,7 @@ Tao = 0.1
 
 mem_pars = {'w': w, 'D': D, 'Roff': Roff, 'Ron': Ron, 'mu': mu, 'Tao': Tao}
 
-net_pars = {'degree': 3, 'N': 10}
+net_pars = {'degree': 3, 'N': 30, 'type':graph_type[1],'k':5,'p':0.1}
 
 netdict = generate_network(mem_pars, net_pars)
 
@@ -175,6 +187,7 @@ def update(val):
 
 sfreq.on_changed(update)
 samp.on_changed(update)
+
 
 for i in range(10000):
     r = run(netdict['Circuit'], netdict['Opa'])['op']

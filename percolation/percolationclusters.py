@@ -56,12 +56,13 @@ def MK_EQSYSTEM (A , X , Y ):
     upper_diag2 = zeros(sites - X)
     # Calculates the nonzero upper diagonals
     #print A
+    upper_diag1 = A[X:X*(Y-1)-1, 0]
+    upper_diag2 = A[X:X*(Y-2), 1]
     main_diag = A[X:X*(Y-1), 0] + A[X:X*(Y-1), 1] + A[0:X*(Y-2), 1] + A[X-1:X*(Y-1)-1, 0]
-    upper_diag1 = A [X:X*(Y-1)-1, 0]
-    upper_diag2 = A [X:X*(Y-2), 1]
     main_diag[where(main_diag == 0)] = 1
+    # B = dia_matrix ((sites , sites))
     # Constructing B which is symmetric , lower = upper diagonals .
-    B = dia_matrix ((sites , sites)) # B *u = t
+    # B *u = t
     B = - spdiags ( upper_diag1 , -1 , sites , sites )
     B = B + - spdiags ( upper_diag2 ,-X , sites , sites )
     B = B + B.T + spdiags ( main_diag , 0 , sites , sites )

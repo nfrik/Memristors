@@ -79,7 +79,7 @@ if __name__ == "__main__":
 # % R_OFF/R_ON = 160 ==> R_OFF = 16e+3 ohm
 # % w_0/D = 0.5 ==> w_0 = 5nm = 5e-9 m
 
-    mem1 = memristor(w=100e-9,D=200e-9,Roff=16e5,Ron=1e4,mu=1e-12,Tao=0.001,v=1.0)
+    mem1 = memristor(w=250e-9,D=500e-9,Roff=16e5,Ron=1e4,mu=1e-12,Tao=0.001,v=1.0)
 
     yw=[]
     yr=[]
@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     print t_0
 
-    for t in np.arange(0,20*math.pi,mem1.getTao()):
+    for t in np.arange(0,2*math.pi,mem1.getTao()*0.1):
         yw.append(mem1.getW()/mem1.getD())
         yi.append(mem1.getI())
         yr.append(mem1.getR())
