@@ -70,8 +70,8 @@ def plot_graph(G):
     node_labels = nx.get_node_attributes(G, 'number')
 
     fig, ax = plt.subplots()
-    # pos = nx.circular_layout(G)
-    pos = nx.spring_layout(G)
+    pos = nx.circular_layout(G)
+    # pos = nx.spring_layout(G)
     nx.draw(G, pos=pos, ax=ax)
     nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edge_labels, font_size=8, ax=ax)
     nx.draw_networkx_labels(G, pos=pos, labels=node_labels, font_size=8, ax=ax)
@@ -79,9 +79,28 @@ def plot_graph(G):
     plt.savefig('show2.png')
     plt.close()
 
-def export_graph(G):
+def export_graph(G,fname):
     #Currently falstad format only
-    return
+    # r 272 240 272 160 0 100.0
+    file = open(fname,'w')
+
+    #Set XY positions of the nodes
+    pos = nx.circular_layout(G,scale=0.25)
+    nx.set_node_attributes(G,'pos',pos)
+
+    # $ 0 5.0E-6 1.0312258501325766 50 5.0 50
+    file.write('$ %d %1.1E %f %1.2d %1.1f %1.1d\n' % (0,5.0E-6,1.03,50,5.0,50))
+
+    for e in range(0,len(G.edges())):
+        x1=G.node[G.edges()[e][0]]['pos'][0]
+        y1=G.node[G.edges()[e][0]]['pos'][1]
+        x2=G.node[G.edges()[e][1]]['pos'][0]
+        y2=G.node[G.edges()[e][1]]['pos'][1]
+        # file.write('r %d %d %d %d %d %1.1f\n' % (x1*1000,y1*1000,x2*1000,y2*1000,0,50.0))
+        # m 432 192 432 304 0 100.0 16000.0 0.0 1.0E-8 1.0E-10
+        file.write('m %d %d %d %d %d %1.1f %1.1f %1.1f %1.1E %1.1E\n' % (x1*1000,y1*1000,x2*1000,y2*1000,0,100.0,16000.0,0.0,1.0E-8,1.0E-10));
+
+    file.close()
 
 def generate_network(mem_pars, net_pars):
     if net_pars['type']==graph_type[1]:
@@ -114,7 +133,7 @@ def generate_network(mem_pars, net_pars):
     for n in G.nodes_iter():
         G.node[n]['number'] = n
 
-    # Choose randomly ground and voltage terminal nodes on graph
+    # Add random ground and voltage terminal nodes
     [v1, gnd] = random.sample(xrange(0, len(G.nodes())), 2)
     lastnode = len(G.nodes())
     G.add_edge(v1, lastnode)
@@ -124,6 +143,8 @@ def generate_network(mem_pars, net_pars):
     G.node[lastnode]['number'] = 'gnd'
 
     plot_graph(G)
+
+    export_graph(G,'/Users/nfrik/CloudStation/Research/LaBean/ESN/FalstadSPICE/test.txt')
 
     cir.add_resistor("RG", 'n' + str(gnd), cir.gnd, 0.001)
     cir.add_vsource("V1", 'n' + str(v1), cir.gnd, 1000)
@@ -148,7 +169,7 @@ Tao = 0.1
 
 mem_pars = {'w': w, 'D': D, 'Roff': Roff, 'Ron': Ron, 'mu': mu, 'Tao': Tao}
 
-net_pars = {'degree': 3, 'N': 30, 'type':graph_type[1],'k':5,'p':0.1}
+net_pars = {'degree': 3, 'N': 30, 'type':graph_type[1],'k':3,'p':0.2}
 
 netdict = generate_network(mem_pars, net_pars)
 
