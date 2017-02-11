@@ -73,8 +73,8 @@ def plot_graph(G):
     pos = nx.circular_layout(G)
     # pos = nx.spring_layout(G)
     nx.draw(G, pos=pos, ax=ax)
-    nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edge_labels, font_size=8, ax=ax)
-    nx.draw_networkx_labels(G, pos=pos, labels=node_labels, font_size=8, ax=ax)
+    # nx.draw_networkx_edge_labels(G, pos=pos, edge_labels=edge_labels, font_size=8, ax=ax)
+    # nx.draw_networkx_labels(G, pos=pos, labels=node_labels, font_size=8, ax=ax)
 
     plt.savefig('show2.png')
     plt.close()
@@ -85,7 +85,7 @@ def export_graph(G,fname):
     file = open(fname,'w')
 
     #Set XY positions of the nodes
-    pos = nx.circular_layout(G,scale=0.25)
+    pos = nx.circular_layout(G,scale=0.5)
     nx.set_node_attributes(G,'pos',pos)
 
     # $ 0 5.0E-6 1.0312258501325766 50 5.0 50
@@ -97,8 +97,22 @@ def export_graph(G,fname):
         x2=G.node[G.edges()[e][1]]['pos'][0]
         y2=G.node[G.edges()[e][1]]['pos'][1]
         # file.write('r %d %d %d %d %d %1.1f\n' % (x1*1000,y1*1000,x2*1000,y2*1000,0,50.0))
-        # m 432 192 432 304 0 100.0 16000.0 0.0 1.0E-8 1.0E-10
-        file.write('m %d %d %d %d %d %1.1f %1.1f %1.1f %1.1E %1.1E\n' % (x1*1000,y1*1000,x2*1000,y2*1000,0,100.0,16000.0,0.0,1.0E-8,1.0E-10));
+
+        if bool(random.getrandbits(1)):
+            # m 432 192 432 304 0 100.0 16000.0 0.0 1.0E-8 1.0E-10
+            if bool(random.getrandbits(1)):
+                file.write('m %d %d %d %d %d %1.1f %1.1f %1.1f %1.1E %1.1E\n' % (x1*1000,y1*1000,x2*1000,y2*1000,0,100.0,16000.0,0.0,1.0E-8,1.0E-10));
+            else:
+                file.write('c %d %d %d %d %d %1.1E %d\n' % (x1*1000,y1*1000,x2*1000,y2*1000,0,1.0E-4,0));
+        else:
+            # w 224 192 368 192 0
+            # r 416 160 416 240 0 100.0
+            # c 384 144 384 336 0 3.0E-4 0
+            if bool(random.getrandbits(1)):
+                file.write('w %d %d %d %d %d\n' % (x1*1000,y1*1000,x2*1000,y2*1000,0));
+            else:
+                file.write('r %d %d %d %d %d %1.1f\n' % (x1*1000,y1*1000,x2*1000,y2*1000,0,100.0));
+
 
     file.close()
 
@@ -160,6 +174,61 @@ def generate_network(mem_pars, net_pars):
     return networkdict
 
 
+
+
+
+def run_simulator():
+    global n, sfreq, samp, netdict
+    global a0, f0
+    a0 = 1000
+    f0 = 10
+    circ_state = []
+    x = 0
+    y = 0
+    fig = plt.figure(1)
+    ax = fig.add_subplot(211)
+    ax1 = fig.add_subplot(212)
+    plt.subplots_adjust(left=0.25, bottom=0.25)
+    r = run(netdict['Circuit'], netdict['Opa'])['op']
+    line = [None] * (len(r.results.keys()))
+    for n in range(len(line)):
+        line[n], = ax.plot(x, y)
+    l2, = ax1.plot(x, y)
+    axcolor = 'lightgoldenrodyellow'
+    axfreq = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
+    axamp = plt.axes([0.25, 0.15, 0.65, 0.03], axisbg=axcolor)
+    sfreq = Slider(axfreq, 'Freq', 0.01, 20.0, valinit=f0)
+    samp = Slider(axamp, 'Amp', 0.1, 1500.0, valinit=a0)
+
+    def update(val):
+        a0 = samp.val
+        f0 = sfreq.val
+
+    sfreq.on_changed(update)
+    samp.on_changed(update)
+    for i in range(10000):
+        r = run(netdict['Circuit'], netdict['Opa'])['op']
+        netdict = update_memristor_vals_from_oprun(netdict, r)
+        netdict = update_memristor_states(netdict)
+        netdict = update_circrvals_from_memres(netdict)
+        circ_state.append(r)
+
+        for p in range(len(r.results.keys()) - 1):
+            x = np.concatenate((line[p].get_xdata(), [i]))
+            y = np.concatenate((line[p].get_ydata(), [r.results['VN' + str(p)]]))
+            line[p].set_data(x, y)
+            ax.relim()
+            ax.autoscale_view()
+
+        plt.pause(0.001)
+        newv = samp.val * np.sin(2 * np.pi * sfreq.val * i * Tao)
+        set_cir_voltage('V1', newv, netdict)
+        x = np.concatenate((l2.get_xdata(), [i]))
+        y = np.concatenate((l2.get_ydata(), [get_cir_voltage('V1', netdict)]))
+        l2.set_data(x, y)
+        ax1.relim()
+        ax1.autoscale_view()
+
 w = 0.1
 D = 1.0
 Roff = 100.
@@ -169,71 +238,13 @@ Tao = 0.1
 
 mem_pars = {'w': w, 'D': D, 'Roff': Roff, 'Ron': Ron, 'mu': mu, 'Tao': Tao}
 
-net_pars = {'degree': 3, 'N': 30, 'type':graph_type[1],'k':3,'p':0.2}
+net_pars = {'degree': 2, 'N': 40, 'type':graph_type[1],'k':2,'p':0.03}
 
 netdict = generate_network(mem_pars, net_pars)
 
-global a0, f0
-a0 = 1000
-f0 = 10
+run_simulator()
 
-
-circ_state = []
-x = 0
-y = 0
-fig = plt.figure(1)
-ax = fig.add_subplot(211)
-ax1 = fig.add_subplot(212)
-plt.subplots_adjust(left=0.25, bottom=0.25)
-
-r = run(netdict['Circuit'], netdict['Opa'])['op']
-line = [None] * (len(r.results.keys()))
-for n in range(len(line)):
-    line[n], = ax.plot(x, y)
-
-l2, = ax1.plot(x, y)
-
-axcolor = 'lightgoldenrodyellow'
-axfreq = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
-axamp = plt.axes([0.25, 0.15, 0.65, 0.03], axisbg=axcolor)
-
-sfreq = Slider(axfreq, 'Freq', 0.01, 20.0, valinit=f0)
-samp = Slider(axamp, 'Amp', 0.1, 1500.0, valinit=a0)
-
-
-def update(val):
-    a0 = samp.val
-    f0 = sfreq.val
-
-
-sfreq.on_changed(update)
-samp.on_changed(update)
-
-
-for i in range(10000):
-    r = run(netdict['Circuit'], netdict['Opa'])['op']
-    netdict=update_memristor_vals_from_oprun(netdict,r)
-    netdict=update_memristor_states(netdict)
-    netdict=update_circrvals_from_memres(netdict)
-    circ_state.append(r)
-
-    for p in range(len(r.results.keys()) - 1):
-        x = np.concatenate((line[p].get_xdata(), [i]))
-        y = np.concatenate((line[p].get_ydata(), [r.results['VN' + str(p)]]))
-        line[p].set_data(x, y)
-        ax.relim()
-        ax.autoscale_view()
-
-    plt.pause(0.001)
-    newv = samp.val * np.sin(2 * np.pi * sfreq.val * i * Tao)
-    set_cir_voltage('V1', newv, netdict)
-    x = np.concatenate((l2.get_xdata(), [i]))
-    y = np.concatenate((l2.get_ydata(), [get_cir_voltage('V1', netdict)]))
-    l2.set_data(x, y)
-    ax1.relim()
-    ax1.autoscale_view()
-
-# print cur
+#  print cur
 
 # for i in range(len(circ_state[0].results.keys())-1):
 #     plt.plot([x.results['VN'+str(i)] for x in circ_state])

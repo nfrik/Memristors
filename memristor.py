@@ -19,6 +19,22 @@ class memristor:
         self.RoffSq=np.power(self.Roff,2)
         self.muRonDdt=self.mu*self.Ron/self.D
 
+     # def __init__(self):
+     #    self.w = 0 #Width of the TiO(2-X) layer
+     #    self.Roff = 900000 #Resistance Off value
+     #    self.Ron  = 1500000 #Resistance On value
+     #    self.v    = 0 #Voltage
+     #    self.D    = 10e-9 #Width of the TiO layer
+     #    self.mu   = 3e-21 #Mobility
+     #    self.Tao  = 0.001 #Time parameter
+     #    self.RonMRoffD=(self.Ron-self.Roff)/self.D
+     #    self.RoffSq=np.power(self.Roff,2)
+     #    self.muRonDdt=self.mu*self.Ron/self.D
+
+    @classmethod
+    def default(cls):
+        return cls(w=0.,D=10e-9,Roff=1500000.,Ron=900000.,v=0.,mu=3e-19,Tao=0.001)
+
     def setV(self,v):
         self.v = v
 
@@ -38,6 +54,7 @@ class memristor:
         # return (-self.Roff+np.sqrt(self.RoffSq+2*self.RonMRoffD*(self.RonMRoffD/2*np.power(self.w,2)+self.Roff*self.w+self.muRonDdt*self.v)))/self.RonMRoffD
         return self.w+self.muRonDdt*self.v/(self.Ron*self.w/self.D+self.Roff*(1-self.w/self.D))*self.Tao;
 
+
     # def getNewExW(self):
     #     # return (np.sqrt(np.power(self.Roff,2)+(self.Ron-self.Roff)/self.D*((self.Ron-self.Roff)*np.power(self.w,2)/2/self.D+self.Roff*self.w+self.mu*self.Ron/self.D*self.v*self.Tao))-self.Roff)/(self.Ron-self.Roff)/self.D
     #     return (-self.Roff+np.sqrt(self.RoffSq+2*self.RonMRoffD*(self.RonMRoffD/2*np.power(self.w,2)+self.Roff*self.w+self.muRonDdt*self.v)))/self.RonMRoffD
@@ -50,6 +67,9 @@ class memristor:
 
     def getI(self):
         return self.getV()/self.getR()
+
+    def setTao(self,Tao):
+        self.Tao=Tao;
 
     def getTao(self):
         return self.Tao;
@@ -79,7 +99,8 @@ if __name__ == "__main__":
 # % R_OFF/R_ON = 160 ==> R_OFF = 16e+3 ohm
 # % w_0/D = 0.5 ==> w_0 = 5nm = 5e-9 m
 
-    mem1 = memristor(w=5e-9,D=10e-9,Roff=16e3,Ron=1e2,mu=1e-12,Tao=0.001,v=1.0)
+    # mem1 = memristor(w=5e-9,D=10e-9,Roff=16e3,Ron=1e2,mu=1e-12,Tao=0.001,v=1.0)
+    mem1 = memristor.default()
 
     yw=[]
     yr=[]
@@ -87,9 +108,9 @@ if __name__ == "__main__":
     xv=[]
 
     # time needed for migration of defects from one end of the device to another under constant electric potential
-    t_0=mem1.getD()*mem1.getD()/mem1.getMu()/mem1.getV();
-
-    print t_0
+    # t_0=mem1.getD()*mem1.getD()/mem1.getMu()/mem1.getV();
+    #
+    # print t_0
 
     for t in np.arange(0,4*math.pi,mem1.getTao()):
         yw.append(mem1.getW()/mem1.getD())
