@@ -158,7 +158,7 @@ def generate_network(mem_pars, net_pars):
 
     plot_graph(G)
 
-    export_graph(G,'/Users/nfrik/CloudStation/Research/LaBean/ESN/FalstadSPICE/test.txt')
+    export_graph(G,'/Users/nfrik/CloudStation/Research/LaBean/ESN/CircuitSymphony/test_circ.txt')
 
     cir.add_resistor("RG", 'n' + str(gnd), cir.gnd, 0.001)
     cir.add_vsource("V1", 'n' + str(v1), cir.gnd, 1000)
@@ -238,7 +238,7 @@ Tao = 0.1
 
 mem_pars = {'w': w, 'D': D, 'Roff': Roff, 'Ron': Ron, 'mu': mu, 'Tao': Tao}
 
-net_pars = {'degree': 2, 'N': 40, 'type':graph_type[1],'k':2,'p':0.03}
+net_pars = {'degree': 2, 'N': 20, 'type':graph_type[1],'k':4,'p':0.03}
 
 netdict = generate_network(mem_pars, net_pars)
 
